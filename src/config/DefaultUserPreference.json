@@ -1,0 +1,6 @@
+{
+	"assetCategories": [ "investments", "mutual funds", "insurance" ],
+	"expenseCategories": [ "food", "rent", "bills" ],
+	"incomeCategories": [ "payroll", "allowance" ],
+	"loanCategories": [ "car loan", "personal loan", "student loan" ]
+}

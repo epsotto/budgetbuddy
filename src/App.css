@@ -1,0 +1,30 @@
+body {
+	height: 100vh;
+}
+
+.contentBody {
+	height: 80vh;
+}
+
+.userTitle {
+	margin-bottom: 20px;
+}
+
+.upperWidgetsContainer {
+	min-height: 40%;
+	padding: 20px;
+}
+
+.headerLinkStyles a {
+	text-decoration: none;
+	color: inherit;
+}
+
+.headerLinkStyles a:hover {
+	text-decoration: underline;
+	color: inherit;
+}
+
+.headerLinks {
+	margin-top: 1% !important;
+}
