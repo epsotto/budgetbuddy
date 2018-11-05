@@ -47,7 +47,7 @@ NumberFormatCustom.propTypes = {
 	onChange: PropTypes.func.isRequired,
 }
 
-class CategoryListComponent extends Component {
+class CategoryDialogComponent extends Component {
 	constructor() {
 		super()
 
@@ -114,7 +114,7 @@ class CategoryListComponent extends Component {
 							label="Category Name"
 							fullWidth
 							required
-							value={this.state.itemName}
+							value={this.state.categoryName}
 							onChange={this.handleInputChange}
 						/>
 					</DialogContent>
@@ -133,9 +133,16 @@ class CategoryListComponent extends Component {
 	}
 }
 
-CategoryListComponent.propTypes = {
+CategoryDialogComponent.propTypes = {
 	classes: PropTypes.object.isRequired,
 	onAdd: PropTypes.func,
+	handleAdd: PropTypes.func,
+	handleClickOpen: PropTypes.func,
+	handleClose: PropTypes.func,
+	handleInputChange: PropTypes.func,
+	categoryName: PropTypes.string,
+	buttonType: PropTypes.string,
+	open: PropTypes.bool,
 }
 
-export default withStyles(styles)(CategoryListComponent)
+export default withStyles(styles)(CategoryDialogComponent)

@@ -1,10 +1,16 @@
-import React from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles'
 import { Grid, Typography } from '@material-ui/core'
 import '../App.css'
 import UpperWidget from '../molecule/UpperWidget'
 import HeaderButton from '../component/HeaderButtons'
+import fire from '../config/Fire'
+
+const db = fire.firestore('budgetbuddy')
+const settings = { timestampsInSnapshots: true }
+db.settings(settings)
+const usersRef = db.collection('users')
 
 const styles = (theme) => ({
 	card: {
@@ -43,37 +49,58 @@ const styles = (theme) => ({
 	},
 })
 
-function Home(props){
-	const { classes } = props
+class Home extends Component {
+	constructor() {
+		super()
+		this.state = { uName: '', uid: sessionStorage.getItem('user') }
+	}
 
-	return (
-		<Grid item xs={12} className={classes.widgetsContainer}>
-			<Grid container className={classes.userTitle}>
-				<Grid item xs={12}>
-					<div className={classes.userHeader}>
-						<Grid container>
-							<Grid item xs={11}>
-								<Typography variant="headline" color="inherit">
-									Hello there, User!
-								</Typography>
+	componentDidMount() {
+		if (this.state.uid) {
+			usersRef.doc(this.state.uid).get().then((snapShot) => {
+				if (snapShot.exists) {
+					this.setState({ uName: snapShot.data().firstName })
+				}
+			})
+		}
+	}
+
+	render() {
+		const { classes } = this.props
+
+		return (
+			<Grid item xs={12} className={classes.widgetsContainer}>
+				<Grid container className={classes.userTitle}>
+					<Grid item xs={12}>
+						<div className={classes.userHeader}>
+							<Grid container>
+								<Grid item xs={11}>
+									{this.state.uName !== '' ? (
+										<Typography variant="headline" color="inherit">
+											Hello there, {this.state.uName}!
+										</Typography>
+									) : null}
+								</Grid>
+								<HeaderButton />
 							</Grid>
-							<HeaderButton />
-						</Grid>
-					</div>
+						</div>
+					</Grid>
 				</Grid>
-			</Grid>
 
-			<Grid container>
-				<Grid item xs={12}>
-					<UpperWidget />
+				<Grid container>
+					<Grid item xs={12}>
+						<UpperWidget />
+					</Grid>
 				</Grid>
 			</Grid>
-		</Grid>
-	)
+		)
+	}
 }
 
 Home.propTypes = {
 	classes: PropTypes.object.isRequired,
+	uName: PropTypes.string,
+	uid: PropTypes.string,
 }
 
 export default withStyles(styles)(Home)

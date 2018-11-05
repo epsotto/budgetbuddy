@@ -111,6 +111,12 @@ class CustomDialogComponent extends Component {
 		}
 	}
 
+	handleAmountChange = (name) => (event) => {
+		this.setState({
+			[name]: event.target.value,
+		})
+	}
+
 	componentDidUpdate(prevProps) {
 		if (prevProps.dateSelected !== this.props.dateSelected) {
 			this.setState({
@@ -164,7 +170,7 @@ class CustomDialogComponent extends Component {
 							label="Amount"
 							name="amount"
 							value={this.state.amount}
-							onChange={this.handleInputChange('amount')}
+							onChange={this.handleAmountChange('amount')}
 							id="amount"
 							InputProps={{
 								inputComponent: NumberFormatCustom,
@@ -211,6 +217,18 @@ class CustomDialogComponent extends Component {
 CustomDialogComponent.propTypes = {
 	classes: PropTypes.object.isRequired,
 	onAdd: PropTypes.func,
+	open: PropTypes.bool,
+	selectedDate: PropTypes.string,
+	name: PropTypes.string,
+	category: PropTypes.string,
+	amount: PropTypes.number,
+	isRecurring: PropTypes.string,
+	recurrence: PropTypes.string,
+	handleAdd: PropTypes.func,
+	handleAmountChange: PropTypes.func,
+	handleClickOpen: PropTypes.func,
+	handleClose: PropTypes.func,
+	handleInputChange: PropTypes.func,
 }
 
 export default withStyles(styles)(CustomDialogComponent)

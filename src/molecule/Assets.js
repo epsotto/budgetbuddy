@@ -1,22 +1,20 @@
 import React, { Component } from 'react'
-import { Grid, Typography } from '@material-ui/core'
+import { Grid, Typography, CircularProgress } from '@material-ui/core'
 import { withStyles } from '@material-ui/core/styles'
 import CustomTableComponent from '../component/CustomTableComponent'
-import DatePickerComponent from '../component/DatePickerComponent'
 import CustomDialogComponent from '../component/CustomDialogComponent'
 import CategoryListComponent from '../component/CategoryListComponent'
 import CategoryDialogComponent from '../component/CategoryDialogComponent'
 import moment from 'moment'
 import HeaderButton from '../component/HeaderButtons'
 import fire from '../config/Fire'
+import PropTypes from 'prop-types'
 
 const db = fire.firestore('budgetbuddy')
 const settings = { timestampsInSnapshots: true }
 db.settings(settings)
-
-function createData(name, category, amount, recurrence){
-	return { name, category, amount, recurrence }
-}
+const usersRef = db.collection('users')
+const assetsRef = db.collection('asset')
 
 const styles = (theme) => ({
 	card: {
@@ -55,50 +53,76 @@ class Assets extends Component {
 			selectedDate: new moment().format('DD/MM/YYYY'),
 			transactionType: 'asset',
 			categoryList: [],
-			assetList: [
-				// createData('PhilAm', 'insurance', 3.7, 'monthly'),
-				// createData('ANZ Corp', 'investment', 25.0, 'monthly'),
-				// createData('Eclair', 'investment', 16.0, 'forth-nightly'),
-				// createData('sunlife', 'mutual fund', 6.0, 'annually'),
-			],
+			assetList: [],
 			uid: sessionStorage.getItem('user'),
+			itemLoader: true,
+			categoryLoader: true,
 		}
 	}
 
 	componentDidMount() {
 		if (this.state.uid !== null) {
-			db
-				.collection('users')
+			usersRef
 				.doc(this.state.uid)
 				.get()
 				.then((doc) => {
 					if (doc.exists) {
-						this.setState({ categoryList: doc.data().userPreference.assetCategories })
+						this.setState({
+							categoryList: doc.data().userPreference.assetCategories,
+							categoryLoader: false,
+						})
 					} else {
+						this.setState({ categoryList: [] })
 						console.log('Document not found')
 					}
 				})
 				.catch((error) => {
-					console.log('Error while fetching data. Please refresh.')
+					console.log('Error while fetching data. Please refresh. ' + error)
 				})
 
-			// db.collection
+			assetsRef.where('uid', '==', this.state.uid).get().then((docs) => {
+				if (!docs.empty) {
+					let assetItem = {
+						name: '',
+						category: '',
+						amount: '',
+						isReccuring: '',
+						recurrence: '',
+					}
+					let pulledAssetList = []
+					docs.forEach((item) => {
+						assetItem.name = item.data().name
+						assetItem.category = item.data().category
+						assetItem.amount = item.data().amount
+						assetItem.isReccuring = item.data().isReccuring
+						assetItem.recurrence = assetItem.isReccuring === 'false' ? 'none' : item.data().recurrence
+
+						pulledAssetList = pulledAssetList.concat(assetItem)
+					})
+
+					this.setState({ assetList: pulledAssetList, itemLoader: false })
+				}
+			})
 		} else {
 			setTimeout(function(){
 				window.location.reload(true)
-			}, 2000)
+			}, 1000)
 		}
 	}
 
 	handleAdd = (data) => {
 		let newAsset = this.state.assetList.concat(data.item)
-		console.log('userId: ' + this.state.uid)
-		db
-			.collection('users')
-			.doc(this.state.uid)
-			.update({
-				updateDttm: Date.now(),
-				'userPreference.assetCategories': newAsset,
+
+		assetsRef
+			.add({
+				name: data.item.name,
+				category: data.item.category,
+				amount: data.item.amount,
+				isRecurring: data.item.isRecurring,
+				recurrence: data.item.recurrence,
+				uid: this.state.uid,
+				createDttm: moment(this.state.selectedDate, 'DD/MM/YYYY').valueOf(),
+				updateDttm: moment(moment().format('DD/MM/YYYY'), 'DD/MM/YYYY').valueOf(),
 			})
 			.then(() => {
 				this.setState({ assetList: newAsset })
@@ -110,11 +134,10 @@ class Assets extends Component {
 		if (this.state.categoryList.indexOf(data.categoryName.toLowerCase()) < 0) {
 			newCategory = this.state.categoryList.concat(data.categoryName.toLowerCase())
 
-			db
-				.collection('users')
+			usersRef
 				.doc(this.state.uid)
 				.update({
-					updateDttm: Date.now(),
+					updateDttm: moment(moment().format('DD/MM/YYYY'), 'DD/MM/YYYY').valueOf(),
 					'userPreference.assetCategories': newCategory,
 				})
 				.then(() => {
@@ -123,10 +146,6 @@ class Assets extends Component {
 		} else {
 			console.log('Category already exists.')
 		}
-	}
-
-	handleDateChange = (data) => {
-		this.setState({ selectedDate: data.format('DD/MM/YYYY') })
 	}
 
 	handleModifyCategory = (data) => {
@@ -138,12 +157,31 @@ class Assets extends Component {
 		if (isDelete) {
 			newCategoryList.splice(index, 1)
 
-			this.setState({
-				cateogryList: newCategoryList,
-			})
+			usersRef
+				.doc(this.state.uid)
+				.update({
+					updateDttm: moment(moment().format('DD/MM/YYYY'), 'DD/MM/YYYY').valueOf(),
+					'userPreference.assetCategories': newCategoryList,
+				})
+				.then(() => {
+					this.setState({
+						cateogryList: newCategoryList,
+					})
+				})
 		} else {
 			newCategoryList[index] = newCategoryName
-			this.setState({ categoryList: newCategoryList })
+
+			usersRef
+				.doc(this.state.uid)
+				.update({
+					updateDttm: moment(moment().format('DD/MM/YYYY'), 'DD/MM/YYYY').valueOf(),
+					'userPreference.assetCategories': newCategoryList,
+				})
+				.then(() => {
+					this.setState({
+						cateogryList: newCategoryList,
+					})
+				})
 		}
 	}
 
@@ -151,15 +189,54 @@ class Assets extends Component {
 		let newItemList = this.state.assetList
 
 		if (data.isDelete) {
-			newItemList.splice(data.id, 1)
+			assetsRef
+				.where('uid', '==', this.state.uid)
+				.where('name', '==', newItemList[data.id].name)
+				.get()
+				.then((docRef) => {
+					if (!docRef.empty) {
+						docRef.forEach((item) => {
+							item.ref.delete().then(() => {
+								newItemList.splice(data.id, 1)
+								this.setState({ assetList: newItemList })
+							})
+						})
+					} else {
+						console.log('Document not found')
+					}
+				})
 		} else {
-			newItemList[data.id].name = data.newName
-			newItemList[data.id].category = data.newCategory
-			newItemList[data.id].amount = data.newAmount
-			newItemList[data.id].recurrence = data.newRecurrence
-		}
+			assetsRef
+				.where('uid', '==', this.state.uid)
+				.where('name', '==', this.state.loansList[data.id].name)
+				.get()
+				.then((docRef) => {
+					if (!docRef.empty) {
+						docRef.forEach((item) => {
+							item.ref
+								.update({
+									name: data.newName,
+									category: data.newCategory,
+									amount: data.newAmount,
+									isRecurring: data.newIsRecurring,
+									recurrence: data.newRecurrence,
+									updateDttm: moment(moment().format('DD/MM/YYYY'), 'DD/MM/YYYY').valueOf(),
+								})
+								.then(() => {
+									newItemList[data.id].name = data.newName
+									newItemList[data.id].category = data.newCategory
+									newItemList[data.id].amount = data.newAmount
+									newItemList[data.id].isRecurring = data.newIsRecurring
+									newItemList[data.id].recurrence = data.newRecurrence
 
-		this.setState({ assetList: newItemList })
+									this.setState({ assetList: newItemList })
+								})
+						})
+					} else {
+						console.log('Document not found')
+					}
+				})
+		}
 	}
 
 	render() {
@@ -177,39 +254,54 @@ class Assets extends Component {
 				</Grid>
 				<Grid container>
 					<Grid item xs={12}>
-						<Typography variant="display1" color="primary">
-							<DatePickerComponent onDateChange={this.handleDateChange} />
-						</Typography>
-						<Grid container spacing={8}>
-							<Grid item xs={8}>
-								<CustomDialogComponent
-									onAdd={this.handleAdd}
-									type={this.state.transactionType}
-									categoryChoice={this.state.categoryList}
-								/>
-								<CustomTableComponent
-									dataList={this.state.assetList}
-									onModifyItemList={this.handleModifyItem}
-									categoryChoice={this.state.categoryList}
-								/>
+						{this.state.itemLoader && this.state.categoryLoader ? (
+							<CircularProgress />
+						) : (
+							<Grid container spacing={8}>
+								<Grid item xs={8}>
+									<CustomDialogComponent
+										onAdd={this.handleAdd}
+										type={this.state.transactionType}
+										categoryChoice={this.state.categoryList}
+									/>
+									<CustomTableComponent
+										dataList={this.state.assetList}
+										onModifyItemList={this.handleModifyItem}
+										categoryChoice={this.state.categoryList}
+									/>
+								</Grid>
+
+								<Grid item xs={4}>
+									<CategoryDialogComponent
+										onCategoryAdd={this.handleCategoryAdd}
+										type={this.state.transactionType}
+									/>
+									<CategoryListComponent
+										categoryList={this.state.categoryList}
+										onModifyCategoryList={this.handleModifyCategory}
+									/>
+								</Grid>
 							</Grid>
-							<Grid item xs={4}>
-								<CategoryDialogComponent
-									onCategoryAdd={this.handleCategoryAdd}
-									dateSelected={this.state.selectedDate}
-									type={this.state.transactionType}
-								/>
-								<CategoryListComponent
-									categoryList={this.state.categoryList}
-									onModifyCategoryList={this.handleModifyCategory}
-								/>
-							</Grid>
-						</Grid>
+						)}
 					</Grid>
 				</Grid>
 			</Grid>
 		)
 	}
+}
+
+Assets.propTypes = {
+	classes: PropTypes.object.isRequired,
+	transactionType: PropTypes.string,
+	categoryList: PropTypes.arrayOf(PropTypes.string),
+	assetList: PropTypes.object,
+	uid: PropTypes.string,
+	handleAdd: PropTypes.func,
+	handleCategoryAdd: PropTypes.func,
+	handleModifyCategory: PropTypes.func,
+	handleModifyItem: PropTypes.func,
+	itemLoader: PropTypes.bool,
+	categoryLoader: PropTypes.bool,
 }
 
 export default withStyles(styles)(Assets)

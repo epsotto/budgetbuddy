@@ -21,7 +21,7 @@ class HeaderButton extends Component {
 					<Link to={{ pathname: '/profile' }} id="profile">
 						Profile
 					</Link>&nbsp;|&nbsp;
-					<Link to="#" id="logout" onClick={this.logoutAction}>
+					<Link to="" id="logout" onClick={this.logoutAction}>
 						Logout
 					</Link>
 				</Typography>

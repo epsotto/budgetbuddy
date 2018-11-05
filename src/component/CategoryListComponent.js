@@ -193,4 +193,21 @@ class CategoryListComponent extends Component {
 	}
 }
 
+CategoryListComponent.propTypes = {
+	classes: PropTypes.object.isRequired,
+	open: PropTypes.bool,
+	confirm: PropTypes.bool,
+	isDelete: PropTypes.bool,
+	newCategoryName: PropTypes.string,
+	oldCategoryName: PropTypes.string,
+	handleClose: PropTypes.func,
+	handleConfirmClose: PropTypes.func,
+	handleConfirmed: PropTypes.func,
+	handleDelete: PropTypes.func,
+	handleInputChange: PropTypes.func,
+	handleToggle: PropTypes.func,
+	handleUpdate: PropTypes.func,
+	onModifyCategoryList: PropTypes.func,
+}
+
 export default withStyles(styles)(CategoryListComponent)

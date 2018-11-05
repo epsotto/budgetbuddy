@@ -39,7 +39,7 @@ export default class DatePickerComponent extends PureComponent {
 								animateYearScrolling
 								showTodayButton
 								disableFuture
-								label="Budget shown as of"
+								label="Record shown as of"
 							/>
 						</Typography>
 					</div>
@@ -51,4 +51,5 @@ export default class DatePickerComponent extends PureComponent {
 
 DatePickerComponent.propTypes = {
 	onDateChange: PropTypes.func,
+	selectedDate: PropTypes.string,
 }

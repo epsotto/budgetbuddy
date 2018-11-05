@@ -138,6 +138,7 @@ class CustomTableComponent extends Component {
 		newIsRecurring: 'false',
 		newRecurrence: '',
 		index: 0,
+		oldItem: [],
 	}
 
 	handleClick = (event, id) => {
@@ -145,7 +146,9 @@ class CustomTableComponent extends Component {
 		let selectedItem = dataList[id]
 
 		let isReccuring =
-			selectedItem.recurrence !== '' || selectedItem.recurrence.toLowerCase() !== 'none' ? 'true' : 'false'
+			selectedItem.recurrence !== ''
+				? 'true'
+				: selectedItem.recurrence.toLowerCase() !== 'none' ? 'false' : 'true'
 
 		this.setState({
 			index: id,
@@ -181,6 +184,12 @@ class CustomTableComponent extends Component {
 				[name]: value,
 			})
 		}
+	}
+
+	handleAmountChange = (name) => (event) => {
+		this.setState({
+			[name]: event.target.value,
+		})
 	}
 
 	handleUpdateItem = () => {
@@ -324,7 +333,7 @@ class CustomTableComponent extends Component {
 						<TextField
 							label="Amount"
 							value={this.state.newAmount}
-							onChange={this.handleInputChange('amount')}
+							onChange={this.handleAmountChange('newAmount')}
 							id="newAmount"
 							InputProps={{
 								inputComponent: NumberFormatCustom,
@@ -384,6 +393,29 @@ class CustomTableComponent extends Component {
 
 CustomTableComponent.propTypes = {
 	classes: PropTypes.object.isRequired,
+	page: PropTypes.number,
+	rowsPerPage: PropTypes.number,
+	open: PropTypes.bool,
+	confirm: PropTypes.bool,
+	isDelete: PropTypes.bool,
+	selectedItem: PropTypes.object,
+	newName: PropTypes.string,
+	newCategory: PropTypes.string,
+	newAmount: PropTypes.number,
+	newIsRecurring: PropTypes.string,
+	newRecurrence: PropTypes.string,
+	index: PropTypes.number,
+	oldItem: PropTypes.object,
+	handleAmountChange: PropTypes.func,
+	handleChangePage: PropTypes.func,
+	handleChangeRowsPerPage: PropTypes.func,
+	handleClick: PropTypes.func,
+	handleClose: PropTypes.func,
+	handleConfirmClose: PropTypes.func,
+	handleConfirmed: PropTypes.func,
+	handleDeleteItem: PropTypes.func,
+	handleInputChange: PropTypes.func,
+	handleUpdateItem: PropTypes.func,
 }
 
 export default withStyles(styles)(CustomTableComponent)
