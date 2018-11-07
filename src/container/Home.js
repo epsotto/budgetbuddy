@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles'
 import { Grid, Typography } from '@material-ui/core'
 import '../App.css'
-import UpperWidget from '../molecule/UpperWidget'
+import UpperWidget from '../organism/UpperWidget'
 import HeaderButton from '../component/HeaderButtons'
 import fire from '../config/Fire'
 

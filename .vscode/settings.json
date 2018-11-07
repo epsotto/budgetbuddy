@@ -2,5 +2,7 @@
     "prettier.semi": false,
     "prettier.trailingComma": "es5",
     "editor.formatOnSave": true,
-    "prettier.noSpaceEmptyFn": true
+    "prettier.noSpaceEmptyFn": true,
+    "typescript.validate.enable": false,
+    "typescript.tsc.autoDetect": "off"
 }

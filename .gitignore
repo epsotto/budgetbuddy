@@ -15,7 +15,12 @@
 .env.development.local
 .env.test.local
 .env.production.local
-src/config/Fire.js
+# src/config/Fire.js
+package-lock.json
+firebase.json
+.firebaserc
+/.firebase
+.vscode/settings.json
 
 npm-debug.log*
 yarn-debug.log*

@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import './App.css'
 import Main from './container/Main'
-import Login from './molecule/LoginLanding'
+import Login from './organism/LoginLanding'
 import { CssBaseline } from '@material-ui/core'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core'
 import indigo from '@material-ui/core/colors/indigo'
